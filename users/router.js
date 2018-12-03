@@ -1,9 +1,15 @@
 'use strict';
+
+// http://www.passportjs.org/docs/username-password/
+
 const express = require('express');
 const bodyParser = require('body-parser');
 
 const passport = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
+
+// var passport = require('passport')
+//   , LocalStrategy = require('passport-local').Strategy;
 
 const { User } = require('./models');
 
@@ -14,7 +20,7 @@ router.use(bodyParser.json());
 // ===== Define and create basicStrategy =====
 const localStrategy = new LocalStrategy((username, password, done) => {
   let user;
-  User
+  User //models
     .findOne({ username })
     .then(results => {
       user = results;
@@ -30,7 +36,7 @@ const localStrategy = new LocalStrategy((username, password, done) => {
       return user.validatePassword(password);
     })
     .then(isValid => {
-      if (!isValid) {
+      if (!isValid) { //reject the promise 
         return Promise.reject({
           reason: 'LoginError',
           message: 'Incorrect password',
@@ -49,6 +55,7 @@ const localStrategy = new LocalStrategy((username, password, done) => {
     });
 });
 
+//mount localStrategy
 passport.use(localStrategy);
 
 // Post to register a new user
@@ -66,6 +73,7 @@ router.post('/users', (req, res) => {
   }
 
   const stringFields = ['username', 'password', 'firstName', 'lastName'];
+  //make sure that the field is in req.body and the type of field is NOT string, in short invalid field
   const nonStringField = stringFields.find(
     field => field in req.body && typeof req.body[field] !== 'string'
   );
@@ -79,6 +87,7 @@ router.post('/users', (req, res) => {
     });
   }
 
+  // trimmed = removing white space
   // If the username and password aren't trimmed we give an error.  Users might
   // expect that these will work without trimming (i.e. they want the password
   // "foobar ", including the space at the end).  We need to reject such values
@@ -86,7 +95,7 @@ router.post('/users', (req, res) => {
   // trimming them and expecting the user to understand.
   // We'll silently trim the other fields, because they aren't credentials used
   // to log in, so it's less of a problem.
-  const explicityTrimmedFields = ['username', 'password'];
+  const explicityTrimmedFields = ['username', 'password']; //trim these two because they are credentials
   const nonTrimmedField = explicityTrimmedFields.find(
     field => req.body[field].trim() !== req.body[field]
   );
@@ -154,7 +163,7 @@ router.post('/users', (req, res) => {
         });
       }
       // If there is no existing user, hash the password
-      return User.hashPassword(password);
+      return User.hashPassword(password); //from bcrypt?
     })
     .then(digest => {
       return User.create({
@@ -177,6 +186,7 @@ router.post('/users', (req, res) => {
     });
 });
 
+//why do you need this?
 router.get('/users/:id', (req, res) => {
   return User.findById(req.params.id)
     .then(user => res.json(user.serialize()))

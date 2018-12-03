@@ -33,7 +33,7 @@ UserSchema.methods.validatePassword = function (password) {
 };
 
 UserSchema.statics.hashPassword = function (password) {
-  return bcrypt.hash(password, 10);
+  return bcrypt.hash(password, 10); //we're running the password to the hash 10x. What happens is that you have plain text pass "catsRCool", you hash that, and then add it to the hash. this is why it takes longer to use bcrypt
 };
 
 const User = mongoose.model('User', UserSchema);
